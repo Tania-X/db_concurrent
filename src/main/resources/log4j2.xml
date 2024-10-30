@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="OFF">
+  <properties>
+    <property name="log_pattern">
+      %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger#%M:%L - %msg%n
+    </property>
+    <property name="log_home">./logs/</property>
+    <property name="file_name">max</property>
+    <property name="every_file_size">500M</property>
+    <property name="output_log_level">info</property>
+  </properties>
+  <Appenders>
+    <!-- Console Appender -->
+    <Console name="Console" target="SYSTEM_OUT">
+      <Filters>
+        <ThresholdFilter level="debug" onMatch="NEUTRAL" onMismatch="DENY"/>
+        <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="ACCEPT"/>
+      </Filters>
+      <PatternLayout pattern="${log_pattern}"/>
+    </Console>
+
+    <!-- Common Log Rolling File Appender -->
+    <RollingFile name="RollingInfoFile" fileName="${log_home}${file_name}.log" filePattern="${log_home}/${file_name}-%d{yyyy-MM-dd}-%i.log">
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        <SizeBasedTriggeringPolicy size="${every_file_size}"/>
+      </Policies>
+      <DefaultRolloverStrategy>
+        <Delete basePath="${log_home}" maxDepth="1">
+          <IfFileName glob="${file_name}*.log"/>
+          <IfLastModified age="180d"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+      <Filters>
+        <ThresholdFilter level="debug" onMatch="NEUTRAL" onMismatch="DENY"/>
+        <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="ACCEPT"/>
+      </Filters>
+      <PatternLayout pattern="${log_pattern}"/>
+    </RollingFile>
+
+    <!-- Error Log Rolling File Appender -->
+    <RollingFile name="RollingErrorFile" fileName="${log_home}${file_name}-error.log" filePattern="${log_home}/${file_name}-%d{yyyy-MM-dd}-%i.log">
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        <SizeBasedTriggeringPolicy size="${every_file_size}"/>
+      </Policies>
+      <DefaultRolloverStrategy>
+        <Delete basePath="${log_home}" maxDepth="1">
+          <IfFileName glob="${file_name}-error*.log"/>
+          <IfLastModified age="180d"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+      <Filters>
+        <ThresholdFilter level="warn" onMatch="NEUTRAL" onMismatch="DENY"/>
+        <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="ACCEPT"/>
+      </Filters>
+      <PatternLayout pattern="${log_pattern}"/>
+    </RollingFile>
+  </Appenders>
+
+  <Loggers>
+    <!-- Root Logger -->
+    <Root level="${output_log_level}" additivity="false" includeLocation="true">
+      <appender-ref ref="RollingInfoFile"/>
+      <appender-ref ref="RollingErrorFile"/>
+      <appender-ref ref="Console"/>
+    </Root>
+  </Loggers>
+</Configuration>

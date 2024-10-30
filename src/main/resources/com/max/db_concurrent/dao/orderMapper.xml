@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.max.db_concurrent.dao.OrderDao">
+
+  <resultMap id="orderMap" type="com.max.db_concurrent.entity.bean.OrderBean">
+    <id column="id" property="id" jdbcType="INTEGER"/>
+    <result column="order_no" property="orderNo" jdbcType="VARCHAR"/>
+    <result column="order_detail" property="orderDetail" jdbcType="VARCHAR"/>
+    <result column="order_flag" property="orderFlag" jdbcType="VARCHAR"/>
+  </resultMap>
+
+  <insert id="insertOrder" parameterType="com.max.db_concurrent.entity.bean.OrderBean">
+    <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
+      select last_insert_id()
+    </selectKey>
+    insert into t_order(order_no, order_detail, order_flag)
+    values (#{orderNo,jdbcType=VARCHAR}, #{orderDetail,jdbcType=VARCHAR}, #{orderFlag,jdbcType=VARCHAR})
+
+  </insert>
+  <update id="updateFlagByOrderNo">
+    update t_order set order_flag=#{orderFlag,jdbcType=VARCHAR} where order_no=#{orderNo,jdbcType=VARCHAR}
+  </update>
+
+  <select id="queryOrderByOrderNo" resultMap="orderMap">
+    select id, order_no, order_detail, order_flag
+    from t_order
+    where 1=1
+    <if test="orderNo != null and orderNo != ''">
+      and order_no = #{orderNo, jdbcType=VARCHAR}
+    </if>
+  </select>
+
+</mapper>

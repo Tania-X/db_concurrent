@@ -6,6 +6,7 @@ import com.max.db_concurrent.entity.bean.OrderBean;
 import com.max.db_concurrent.entity.dto.OrderDto;
 import com.max.db_concurrent.service.OrderService;
 import jakarta.annotation.Resource;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,19 @@ public class OrderServiceImpl implements OrderService {
       return new ResultEntity(9998, null, "order update error");
     }
     log.info("order {} operate success, order flag changed to {}.", orderBean, newOrderFlag);
+    return new ResultEntity(200, null, null);
+  }
+
+  @Override
+  @Transactional
+  public ResultEntity batchUpdate(List<String> orderNoList) {
+    for (String orderNo : orderNoList) {
+      int affectedRows = orderDao.updateFlagByOrderNo(orderNo, "B");
+      if (affectedRows != 1) {
+        log.error("orderNo {} update error.", orderNo);
+        return new ResultEntity(9998, null, "orderNo update error");
+      }
+    }
     return new ResultEntity(200, null, null);
   }
 }

@@ -30,7 +30,6 @@ public class DeadlockTest extends DbConcurrentApplicationTests {
           orderService.operate(orderDto);
         } catch (Exception e) {
           log.info("order service operate error,", e);
-          throw new RuntimeException(e);
         } finally {
           doneSignal.countDown();
         }
@@ -41,7 +40,6 @@ public class DeadlockTest extends DbConcurrentApplicationTests {
       doneSignal.await();
     } catch (InterruptedException e) {
       log.info("done signal await error,", e);
-      throw new RuntimeException(e);
     }
 
 

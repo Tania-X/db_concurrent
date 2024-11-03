@@ -33,7 +33,7 @@ public class DeadlockTest extends DbConcurrentApplicationTests {
     jdbcTemplate.execute("truncate table t_order;");
     jdbcTemplate.execute("create index order_no_index on t_order (order_no)");
 
-    int concurrentThread = 20;
+    int concurrentThread = 2;
 
     CountDownLatch doneSignal = new CountDownLatch(concurrentThread);
 
@@ -42,7 +42,7 @@ public class DeadlockTest extends DbConcurrentApplicationTests {
           .orderDetail("detail").orderFlag("A").build();
       new Thread(() -> {
         try {
-          orderService.operate(orderDto);
+          orderService.insertAndUpdate(orderDto);
         } catch (Exception e) {
           log.error("order service operate error,", e);
         } finally {
@@ -88,6 +88,50 @@ public class DeadlockTest extends DbConcurrentApplicationTests {
           orderService.batchUpdate(orderNoList);
         } catch (Exception e) {
           log.error("order dao update error,", e);
+        } finally {
+          doneSignal.countDown();
+        }
+      }, "worker-" + i).start();
+    }
+
+    try {
+      doneSignal.await();
+    } catch (InterruptedException e) {
+      log.error("done signal await error,", e);
+    }
+
+    jdbcTemplate.execute("drop index order_no_index on t_order;");
+
+  }
+
+  @Test
+  public void testDeleteAndUpdate() {
+    jdbcTemplate.execute("truncate table t_order;");
+    jdbcTemplate.execute("create index order_no_index on t_order (order_no)");
+
+    int bulkInsertOrders = 2;
+    for (int i = 0; i < bulkInsertOrders; i++) {
+      OrderBean orderBean = OrderBean.builder().orderNo(GeneratorUtil.generateOrderNo())
+          .orderDetail("detail").orderFlag("A").build();
+      orderDao.insertOrder(orderBean);
+    }
+
+    int concurrentThread = 2;
+
+    CountDownLatch doneSignal = new CountDownLatch(concurrentThread);
+
+    for (int i = 0; i < concurrentThread; i++) {
+      List<String> orderNoList = new ArrayList<>(
+          orderDao.queryAll().stream().map(OrderBean::getOrderNo).limit(2).toList());
+      new Thread(() -> {
+        // 考虑翻转其中一个线程的顺序
+        if (Thread.currentThread().getName().contains("0")) {
+          Collections.reverse(orderNoList);
+        }
+        try {
+          orderService.deleteAndUpdate(orderNoList);
+        } catch (Exception e) {
+          log.error("order dao delete and update error,", e);
         } finally {
           doneSignal.countDown();
         }

@@ -23,6 +23,9 @@
   <update id="updateFlagByOrderNo">
     update t_order set order_flag=#{orderFlag,jdbcType=VARCHAR} where order_no=#{orderNo,jdbcType=VARCHAR}
   </update>
+  <delete id="deleteByOrderNo">
+    delete from t_order where order_no=#{orderNo,jdbcType=VARCHAR}
+  </delete>
 
   <select id="queryOrderByOrderNo" resultMap="orderMap">
     select id, order_no, order_detail, order_flag

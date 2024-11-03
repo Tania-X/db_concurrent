@@ -21,7 +21,7 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   @Transactional
-  public ResultEntity operate(OrderDto orderDto) {
+  public ResultEntity insertAndUpdate(OrderDto orderDto) {
     OrderBean orderBean = OrderBean.builder().orderNo(orderDto.getOrderNo())
         .orderDetail(orderDto.getOrderDetail()).orderFlag(
             orderDto.getOrderFlag()).build();
@@ -51,6 +51,28 @@ public class OrderServiceImpl implements OrderService {
         return new ResultEntity(9998, null, "orderNo update error");
       }
     }
+    return new ResultEntity(200, null, null);
+  }
+
+  @Override
+  @Transactional
+  public ResultEntity deleteAndUpdate(List<String> orderNoList) {
+    String deleteOrderNo = orderNoList.get(0);
+    log.info("to be deleted order no is {}", deleteOrderNo);
+    String updateOrderNo = orderNoList.get(1);
+    log.info("to be updated order no is {}", updateOrderNo);
+    int affectedRows = orderDao.deleteByOrderNo(deleteOrderNo);
+    if (affectedRows != 1) {
+      log.error("orderNo {} delete error.", deleteOrderNo);
+      return new ResultEntity(9997, null, "orderNo delete error.");
+    }
+    String newOrderFlag = "B";
+    affectedRows = orderDao.updateFlagByOrderNo(updateOrderNo, newOrderFlag);
+    if (affectedRows != 1) {
+      log.error("order {} update error.", updateOrderNo);
+      return new ResultEntity(9998, null, "order update error");
+    }
+    log.info("order {} operate success, order flag changed to {}.", updateOrderNo, newOrderFlag);
     return new ResultEntity(200, null, null);
   }
 }

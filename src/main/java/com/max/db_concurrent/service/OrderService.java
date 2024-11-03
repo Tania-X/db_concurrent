@@ -6,8 +6,10 @@ import java.util.List;
 
 public interface OrderService {
 
-  ResultEntity operate(OrderDto orderDto);
+  ResultEntity insertAndUpdate(OrderDto orderDto);
 
   ResultEntity batchUpdate(List<String> orderNoList);
+
+  ResultEntity deleteAndUpdate(List<String> orderNoList);
 
 }

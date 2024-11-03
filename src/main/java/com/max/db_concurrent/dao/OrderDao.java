@@ -14,4 +14,6 @@ public interface OrderDao {
 
   List<OrderBean> queryAll();
 
+  int deleteByOrderNo(@Param("orderNo") String orderNo);
+
 }
